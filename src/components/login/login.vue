@@ -1,29 +1,29 @@
 <template>
   <div class="login-wrap">
     <el-form
-      :model="ruleForm"
+      :model="formdata"
       status-icon
       :rules="rules"
-      ref="ruleForm"
+      ref="formdata"
       label-width="80px"
       class="login-form"
       :label-position="labelPosition"
     >
       <h2>用户信息</h2>
 
-      <el-form-item label="用户名" prop="name">
+      <el-form-item label="用户名" prop="username">
         <el-input
           type="text"
-          v-model="ruleForm.name"
+          v-model="formdata.username"
           autocomplete="off"
           prefix-icon="el-icon-user"
         ></el-input>
       </el-form-item>
 
-      <el-form-item label="密码" prop="pass">
+      <el-form-item label="密码" prop="password">
         <el-input
           type="password"
-          v-model="ruleForm.pass"
+          v-model="formdata.password"
           autocomplete="off"
           prefix-icon="el-icon-unlock"
         ></el-input>
@@ -32,17 +32,17 @@
       <el-form-item label="确认密码" prop="checkPass">
         <el-input
           type="password"
-          v-model="ruleForm.checkPass"
+          v-model="formdata.checkPass"
           autocomplete="off"
           prefix-icon="el-icon-unlock"
         ></el-input>
       </el-form-item>
 
       <el-form-item class="">
-        <el-button class="btn" type="primary" @click="submitForm('ruleForm')"
+        <el-button class="btn" type="primary" @click="submitForm('formdata')"
           >登录</el-button
         >
-        <el-button class="btn" @click="resetForm('ruleForm')">重置</el-button>
+        <el-button class="btn" @click="resetForm('formdata')">重置</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -67,8 +67,8 @@ export default {
       if (value === "") {
         callback(new Error("请输入密码"));
       } else {
-        if (this.ruleForm.checkPass !== "") {
-          this.$refs.ruleForm.validateField("checkPass");
+        if (this.formdata.checkPass !== "") {
+          this.$refs.formdata.validateField("checkPass");
         }
         callback();
       }
@@ -77,7 +77,7 @@ export default {
     var validatePass2 = (rule, value, callback) => {
       if (value === "") {
         callback(new Error("请再次输入密码"));
-      } else if (value !== this.ruleForm.pass) {
+      } else if (value !== this.formdata.password) {
         callback(new Error("两次输入密码不一致!"));
       } else {
         callback();
@@ -87,27 +87,31 @@ export default {
     return {
       labelPosition: "top",
 
-      ruleForm: {
-        name: "",
-        pass: "",
+      formdata: {
+        username: "",
+        password: "",
         checkPass: ""
       },
 
       rules: {
-        name: [{ validator: validateName, trigger: "blur" }],
-        pass: [{ validator: validatePass, trigger: "blur" }],
+        username: [{ validator: validateName, trigger: "blur" }],
+        password: [{ validator: validatePass, trigger: "blur" }],
         checkPass: [{ validator: validatePass2, trigger: "blur" }]
       }
     };
   },
 
   methods: {
+    // 登陆请求
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-          alert("submit!");
+          console.log("submit!");
+          this.$http.post("login", this.formdata).then(res => {
+            console.log(res);
+          });
         } else {
-          alert("error submit!!");
+          console.log("error submit!!");
           return false;
         }
       });
@@ -143,4 +147,6 @@ export default {
   width: 30%;
   align-items: right;
 }
+// .prevent -------等于javascript的event.preventDefault()
+// 作用：阻止默认程序的运行
 </style>
