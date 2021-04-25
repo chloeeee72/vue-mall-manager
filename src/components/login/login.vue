@@ -50,6 +50,7 @@
 <script>
 export default {
   data() {
+    // 判断用户名格式的方法
     var validateName = (rule, value, callback) => {
       if (value === "") {
         callback(new Error("用户名不能为空"));
@@ -63,6 +64,7 @@ export default {
       }
     };
 
+    // 判断密码格式的方法
     var validatePass = (rule, value, callback) => {
       if (value === "") {
         callback(new Error("请输入密码"));
@@ -74,6 +76,7 @@ export default {
       }
     };
 
+    // 判断第二次输入密码
     var validatePass2 = (rule, value, callback) => {
       if (value === "") {
         callback(new Error("请再次输入密码"));
@@ -85,14 +88,17 @@ export default {
     };
 
     return {
+      // label位置
       labelPosition: "top",
 
+      // 输入的数据
       formdata: {
         username: "",
         password: "",
         checkPass: ""
       },
 
+      // rules:根据以上方法判断输入的数据格式是否正确
       rules: {
         username: [{ validator: validateName, trigger: "blur" }],
         password: [{ validator: validatePass, trigger: "blur" }],
@@ -102,13 +108,54 @@ export default {
   },
 
   methods: {
-    // 登陆请求
-    submitForm(formName) {
-      this.$refs[formName].validate(valid => {
+    // 1.登陆请求 2.添加异步 3.验证token
+    // 登陆成功 => 在localStorage中存储token => 跳转home => 提示成功
+    // 用户没登录,通过url来到页面 => 服务器验证token值
+    // 登陆失败 => 提示失败
+    async submitForm(formName) {
+      const res = await this.$refs[formName].validate(valid => {
         if (valid) {
           console.log("submit!");
           this.$http.post("login", this.formdata).then(res => {
-            console.log(res);
+            // console.log(res);
+
+            // 把等号右侧data的值赋值给前面的data
+            const {
+              data,
+              meta: { msg, status }
+            } = res.data;
+            // =>
+            // const { meta: { msg, status } } = { meta: { msg: "11", status: 200 } };
+            // =>
+            // { msg, status } = {msg:"11",status:200}
+            // => msg:11  status:200
+
+            if (status === 200) {
+              // 登陆成功 => 在localStorage中存储token => 跳转home => 提示成功 =>
+              console.log("login in success => to home page");
+              localStorage.setItem("token", data.token);
+              // console.log(localStorage.getItem('token'));
+              this.$router.push({ name: "home" });
+              this.$message({
+                type: "success",
+                message: msg
+              });
+            } else if (status === 400) {
+              console.log("login in error 400 wrong pwd or wrong user");
+              // 登陆失败 => 提示失败
+              // 密码错误 用户不存在
+              this.$message({
+                type: "warning",
+                message: msg
+              });
+            } else {
+              console.log("login in error");
+              // 其他错误
+              this.$message({
+                type: "error",
+                message: msg
+              });
+            }
           });
         } else {
           console.log("error submit!!");
@@ -147,6 +194,7 @@ export default {
   width: 30%;
   align-items: right;
 }
+
 // .prevent -------等于javascript的event.preventDefault()
 // 作用：阻止默认程序的运行
 </style>
