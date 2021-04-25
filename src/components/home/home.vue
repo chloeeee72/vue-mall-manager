@@ -136,6 +136,18 @@
 
 <script>
 export default {
+  // 获取token
+  // if token 有 => 继续渲染组件
+  // if token 无 => 登陆页
+  beforeCreate() {
+    // 获取token
+    const token = localStorage.getItem("token");
+    // 无token
+    if (!token) {
+      this.$router.push({name:'login'});
+    }
+  },
+
   data() {
     const item = {
       date: "2016-05-02",
