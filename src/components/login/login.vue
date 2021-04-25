@@ -39,7 +39,10 @@
       </el-form-item>
 
       <el-form-item class="">
-        <el-button class="btn" type="primary" @click="submitForm('formdata')"
+        <el-button
+          class="btn"
+          type="primary"
+          @click.prevent="submitForm('formdata')"
           >登录</el-button
         >
         <el-button class="btn" @click="resetForm('formdata')">重置</el-button>

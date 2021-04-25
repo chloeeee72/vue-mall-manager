@@ -1,6 +1,8 @@
 <template>
   <el-container class="container">
     <!-- header -->
+    <!-- 开启路由模式 :rules="true" -->
+    <!-- el-menu-item index属性值为router -->
     <el-header class="el-header">
       <el-row>
         <!-- dropdown -->
@@ -21,7 +23,7 @@
         </el-col>
         <!-- signout -->
         <el-col :span="2" class="el-header-signout">
-          <a href="#">退出</a>
+          <a href="#" class="singout" @click.prevent="handleSignout()">退出</a>
         </el-col>
       </el-row>
     </el-header>
@@ -29,7 +31,8 @@
     <el-container class="el-adide-main-container">
       <!-- aside -->
       <el-aside class="el-aside">
-        <el-menu :unique-opened="true" :default-openeds="['1']">
+        <el-menu :unique-opened="true" :default-openeds="['1']" :router="true">
+          <!-- :router="true" => 开启路由模式 -->
           <!-- :unique-opened="true"  =>  只保存一个子菜单的展开 -->
           <!-- :default-openeds="['1']" => 默认打开第一个子菜单 -->
           <!-- 用户管理 -->
@@ -40,7 +43,8 @@
             </template>
 
             <el-menu-item-group>
-              <el-menu-item index="1-1">
+              <!-- 绑定路由 -->
+              <el-menu-item :index="router.user">
                 <i class="el-icon-document"></i>
                 用户列表
               </el-menu-item>
@@ -122,13 +126,7 @@
       </el-aside>
 
       <el-main class="el-main">
-        <el-table :data="tableData">
-          <el-table-column prop="date" label="日期" width="140">
-          </el-table-column>
-          <el-table-column prop="name" label="姓名" width="120">
-          </el-table-column>
-          <el-table-column prop="address" label="地址"> </el-table-column>
-        </el-table>
+        <router-view></router-view>
       </el-main>
     </el-container>
   </el-container>
@@ -144,20 +142,29 @@ export default {
     const token = localStorage.getItem("token");
     // 无token
     if (!token) {
-      this.$router.push({name:'login'});
+      this.$router.push({ name: "login" });
     }
   },
 
   data() {
-    const item = {
-      date: "2016-05-02",
-      name: "王小虎",
-      address: "上海市普陀区金沙江路 1518 弄"
-    };
     return {
-      // uniqueopened:true,
-      tableData: Array(20).fill(item)
+      router: {
+        user: "/users"
+      }
     };
+  },
+
+  methods: {
+    handleSignout() {
+      // 清除token => 提示 => 回到login page
+      localStorage.clear();
+      this.$message({
+        type: "success",
+        message: "退出成功"
+      });
+      console.log("退出成功 => to login page");
+      this.$router.push({ name: "login" });
+    }
   }
 };
 </script>
