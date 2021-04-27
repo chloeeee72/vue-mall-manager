@@ -14,7 +14,7 @@
               <el-dropdown-item>新增</el-dropdown-item>
               <el-dropdown-item>删除</el-dropdown-item>
             </el-dropdown-menu>
-            <span>王小虎</span>
+            <span>{{ username }}</span>
           </el-dropdown>
         </el-col>
         <!-- title -->
@@ -146,8 +146,14 @@ export default {
     }
   },
 
+  created() {
+    this.res = this.$route.params.res;
+    this.username = this.res.data.data.username;
+  },
   data() {
     return {
+      res: "",
+      username: "",
       router: {
         user: "/users"
       }
@@ -163,7 +169,7 @@ export default {
         message: "退出成功"
       });
       console.log("退出成功 => to login page");
-      this.$router.push({ name: "login" });
+      this.$router.push({ name: "login", params: { res: this.res } });
     }
   }
 };

@@ -101,6 +101,8 @@ export default {
         checkPass: ""
       },
 
+      res: "",
+
       // rules:根据以上方法判断输入的数据格式是否正确
       rules: {
         username: [{ validator: validateName, trigger: "blur" }],
@@ -121,7 +123,7 @@ export default {
           console.log("submit!");
           this.$http.post("login", this.formdata).then(res => {
             // console.log(res);
-
+            this.res = res;
             // 把等号右侧data的值赋值给前面的data
             const {
               data,
@@ -138,7 +140,8 @@ export default {
               console.log("login in success => to home page");
               localStorage.setItem("token", data.token);
               // console.log(localStorage.getItem('token'));
-              this.$router.push({ name: "home" });
+              // 路由传参：
+              this.$router.push({ name: "home", params: { res: this.res } });
               this.$message({
                 type: "success",
                 message: msg
