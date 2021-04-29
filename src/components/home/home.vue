@@ -6,7 +6,7 @@
     <el-header class="el-header">
       <el-row>
         <!-- dropdown -->
-        <el-col :span="4" class="el-header-dropdown">
+        <!-- <el-col :span="4" class="el-header-dropdown">
           <el-dropdown>
             <i class="el-icon-setting"></i>
             <el-dropdown-menu slot="dropdown">
@@ -16,7 +16,7 @@
             </el-dropdown-menu>
             <span>{{ username }}</span>
           </el-dropdown>
-        </el-col>
+        </el-col> -->
         <!-- title -->
         <el-col :span="18" class="el-header-title">
           电商管理系统
@@ -188,25 +188,30 @@ export default {
   width: 100%;
   background-color: #b1c4db;
   color: #333;
-  text-align: center;
-  align-items: center;
+  display: inline-block;
+  /* text-align: center;
+  align-items: center; */
   line-height: 60px;
 }
 
-.el-header-dropdown {
+/* .el-header-dropdown {
   font-size: 16px;
-}
+} */
 
 .el-header-title {
-  text-align: center;
+  /* display: flex;
+  text-align: center; */
   font-size: 22px;
   font-weight: bold;
 }
 
-.el-icon-setting {
+/* .el-icon-setting {
   margin-right: 10px;
+} */
+.el-header-signout {
+  position: absolute;
+  right: 0px;
 }
-
 .el-header-signout > a {
   text-decoration: none;
   color: #f00;
@@ -218,7 +223,7 @@ export default {
 }
 
 .el-aside {
-  width: 200px;
+  width: 160px;
   background-color: rgb(208, 217, 233);
 }
 

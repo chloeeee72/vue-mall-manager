@@ -61,15 +61,19 @@
           </el-switch>
         </template>
       </el-table-column>
+      <!-- 操作按钮 -->
       <el-table-column prop="address" label="操作" mini>
-        <template>
+        <template slot-scope="scope">
+          <!-- 编辑按钮 -->
           <el-button
             type="primary"
             plain
             icon="el-icon-edit"
             size="mini"
+            @click="showEditUserMsgDialog(scope.row)"
             circle
           ></el-button>
+          <!--  -->
           <el-button
             type="success"
             plain
@@ -77,10 +81,12 @@
             size="mini"
             circle
           ></el-button>
+          <!-- 删除按钮 -->
           <el-button
             type="danger"
             plain
             icon="el-icon-delete"
+            @click="showDeleteUserMsgBtn(scope.row.id)"
             size="mini"
             circle
           ></el-button>
@@ -122,9 +128,32 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisibleAdd = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisibleAdd = false && add()"
-          >确 定</el-button
-        >
+        <el-button type="primary" @click="addUser()">确 定</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 编辑用户对话框 -->
+    <el-dialog title="编辑用户" :visible.sync="dialogFormVisibleEdit">
+      <el-form :model="form">
+        <el-form-item label="用户名" :label-width="formLabelWidth">
+          <el-input
+            :disabled="true"
+            v-model="form.username"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="邮 箱" :label-width="formLabelWidth">
+          <el-input v-model="form.email" autocomplete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="电 话" :label-width="formLabelWidth">
+          <el-input v-model="form.mobile" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisibleEdit = false">取 消</el-button>
+        <el-button type="primary" @click="editUser()">确 定</el-button>
       </div>
     </el-dialog>
   </el-card>
@@ -149,7 +178,7 @@ export default {
       // 表格绑定的数据
       userListData: [],
 
-      // 添加对话框的属性
+      // 添加用户对话框的属性
       dialogFormVisibleAdd: false,
       // 添加用户的表单数据
       // | username | 用户名称 | 不能为空 |
@@ -163,7 +192,10 @@ export default {
         mobile: ""
       },
       // 对话框表单width
-      formLabelWidth: "100px"
+      formLabelWidth: "100px",
+
+      // 编辑用户对话框的属性
+      dialogFormVisibleEdit: false
     };
   },
   methods: {
@@ -197,9 +229,9 @@ export default {
         // 给total 赋值
         this.total = total;
         // 提示
-        this.$message.success(msg);
+        // this.$message.success(msg);
       } else {
-        this.$message.warning(msg);
+        // this.$message.warning(msg);
       }
     },
 
@@ -230,7 +262,89 @@ export default {
     // 展示添加用户对话框的方法
     showAddUserDialog() {
       this.dialogFormVisibleAdd = true;
-    }
+    },
+
+    // 添加用户请求
+    // | username | 用户名称 | 不能为空 |
+    // | password | 用户密码 | 不能为空 |
+    // | email    | 邮箱     | 可以为空 |
+    // | mobile   | 手机号   | 可以为空 |
+    // 弹框中点击确定按钮添加数据的方法
+    async addUser() {
+      // 授权
+      const AUTH_TOKEN = localStorage.getItem("token");
+      this.$http.defaults.headers.common["Authorization"] = AUTH_TOKEN;
+      // 发送请求
+      const res = await this.$http.post(`users`, this.form);
+      console.log(res);
+      const {
+        meta: { status, msg },
+        data
+      } = res.data;
+      if (status === 201) {
+        // 1、提示成功
+        this.$message.success(msg);
+        // 2、关闭对话框
+        // 3、更新视图
+        this.getUserList();
+        // 4、清空文本框
+        // this.form.username = ""
+        this.form = {};
+      } else {
+        this.$message.warning(msg);
+      }
+    },
+
+    // 删除用户的方法
+    showDeleteUserMsgBtn(userId) {
+      this.$confirm("此操作将永久删除用户, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+        center: true
+      })
+        .then(async () => {
+          // 删除单个用户请求
+          // 1、datalist中找userid
+          // 2、把userid以showDeleteUserMsgBtn参数的形式传参
+          // | id     | 用户 id  | 不能为空`参数是url参数:id` |
+          const res = await this.$http.delete(`users/${userId}`);
+          console.log(res);
+
+          if (res.data.meta.status === 200) {
+            // 当前分页跳转到第一页
+            this.pagenum = 1;
+            // 更新视图
+            this.getUserList();
+            // 提示
+            this.$message({
+              type: "success",
+              message: res.data.meta.msg,
+              center: true
+            });
+          }
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除",
+            center: true
+          });
+        });
+    },
+
+    // 显示编辑用户对话框方法
+    showEditUserMsgDialog(user) {
+      // 获取用户数据
+      // 显示对话框
+      // console.log(user);
+      // user = scope.row
+      this.form = user;
+      this.dialogFormVisibleEdit = true;
+    },
+
+    // 编辑用户发送请求的方法
+    editUse() {}
   }
 };
 </script>
