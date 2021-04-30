@@ -261,6 +261,8 @@ export default {
 
     // 展示添加用户对话框的方法
     showAddUserDialog() {
+      // 清空form表单中的数据
+      this.form = {};
       this.dialogFormVisibleAdd = true;
     },
 
@@ -333,18 +335,26 @@ export default {
         });
     },
 
-    // 显示编辑用户对话框方法
+    // 编辑用户 - 显示对话框方法
     showEditUserMsgDialog(user) {
-      // 获取用户数据
-      // 显示对话框
+      // 用户点击编辑按钮 => 获取用户数据显示在对话框中
       // console.log(user);
       // user = scope.row
       this.form = user;
       this.dialogFormVisibleEdit = true;
     },
 
-    // 编辑用户发送请求的方法
-    editUse() {}
+    // 编辑用户 - 发送请求的方法
+    async editUser() {
+      // 用户输入信息 => 点击确定按钮 => 发送请求 => 关闭对话框 => 显示提示消息 => 更新列表
+      // 在打开对话框时。this.form已经被赋值
+      const res = await this.$http.put(`users/${this.form.id}`, this.form);
+      this.dialogFormVisibleEdit = false;
+      this.$message.success(res.data.meta.msg);
+      this.getUserList();
+      // 在点击添加按钮，添加弹框的表单会显示数据，
+      // 此时，与添加按钮的方法使用同一个form，需要在add方法中清空form数据
+    }
   }
 };
 </script>
