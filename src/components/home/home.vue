@@ -31,7 +31,7 @@
     <el-container class="el-adide-main-container">
       <!-- aside -->
       <el-aside class="el-aside">
-        <el-menu :unique-opened="true" :default-openeds="['1']" :router="true">
+        <el-menu :unique-opened="true" :router="true">
           <!-- :router="true" => 开启路由模式 -->
           <!-- :unique-opened="true"  =>  只保存一个子菜单的展开 -->
           <!-- :default-openeds="['1']" => 默认打开第一个子菜单 -->
@@ -63,7 +63,7 @@
                 <i class="el-icon-postcard"></i>
                 角色列表
               </el-menu-item>
-              <el-menu-item index="2-2">
+              <el-menu-item index="right">
                 <i class="el-icon-warning-outline"></i>
                 权限列表
               </el-menu-item>

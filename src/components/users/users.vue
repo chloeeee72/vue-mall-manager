@@ -2,11 +2,7 @@
   <el-card class="card">
     <!-- Breadcrumb 面包屑 -->
     <!-- Element 提供了一个separator属性，在el-breadcrumb标签中设置它来决定分隔符，它只能是字符串，默认为斜杠/。 -->
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item to="/users">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>用户管理</el-breadcrumb-item>
-      <el-breadcrumb-item>用户列表</el-breadcrumb-item>
-    </el-breadcrumb>
+    <my-bread level1="用户管理" level2="用户列表"></my-bread>
 
     <!-- 搜索 添加-->
     <el-row class="search-row">
