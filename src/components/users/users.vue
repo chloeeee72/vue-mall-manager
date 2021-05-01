@@ -51,9 +51,11 @@
           {{ scope.row.create_time | fmdate }}
         </template>
       </el-table-column>
+      <!-- switch 开关 -->
       <el-table-column label="用户状态" width="100">
         <template slot-scope="scope">
           <el-switch
+            @change="changeMgState(scope.row)"
             v-model="scope.row.mg_state"
             active-color="#13ce66"
             inactive-color="#ff4949"
@@ -73,20 +75,23 @@
             @click="showEditUserMsgDialog(scope.row)"
             circle
           ></el-button>
-          <!--  -->
-          <el-button
-            type="success"
-            plain
-            icon="el-icon-check"
-            size="mini"
-            circle
-          ></el-button>
+
           <!-- 删除按钮 -->
           <el-button
             type="danger"
             plain
             icon="el-icon-delete"
             @click="showDeleteUserMsgBtn(scope.row.id)"
+            size="mini"
+            circle
+          ></el-button>
+
+          <!-- 修改用户角色 -->
+          <el-button
+            type="success"
+            plain
+            icon="el-icon-check"
+            @click="showSetUserRoleDialog(scope.row)"
             size="mini"
             circle
           ></el-button>
@@ -156,6 +161,39 @@
         <el-button type="primary" @click="editUser()">确 定</el-button>
       </div>
     </el-dialog>
+
+    <!-- 修改用户角色对话框 -->
+    <el-dialog title="分配角色" :visible.sync="dialogFormVisibleSetUserRole">
+      <el-form :model="form">
+        <el-form-item label="用户名" :label-width="formLabelWidth">
+          {{ currUsername }}
+        </el-form-item>
+        <el-form-item label="角色" :label-width="formLabelWidth">
+          <!-- {{currRoleId}} -->
+          <!-- 在下拉列表中动态显示所有的角色名 role_id-->
+          <el-select v-model="currRoleId">
+            <el-option label="请选择" :value="-1"></el-option>
+            <el-option
+              :label="item.roleName"
+              :value="item.id"
+              v-for="(item, i) in roles"
+              :key="i"
+            ></el-option>
+            <!-- 如果外层select的绑定是数据的值 和 option的value一样，就会显示option的label值 -->
+            <!-- 在data中声明currRoleId = -1：当角色没有角色名的时候显示"请选择"-->
+            <!-- item：遍历roles i：下标-->
+            <!-- 当选择下拉框的值的时候 -> 改变label的值 -> 显示该label -> 改变了value的值-->
+            <!-- 外层select v-model绑定的值 与 option的value值会自动关联  -> currRoleId = value = i -->
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisibleSetUserRole = false"
+          >取 消</el-button
+        >
+        <el-button type="primary" @click="setRole()">确 定</el-button>
+      </div>
+    </el-dialog>
   </el-card>
 </template>
 
@@ -178,7 +216,7 @@ export default {
       // 表格绑定的数据
       userListData: [],
 
-      // 添加用户对话框的属性
+      // 显示添加用户对话框的属性
       dialogFormVisibleAdd: false,
       // 添加用户的表单数据
       // | username | 用户名称 | 不能为空 |
@@ -194,8 +232,20 @@ export default {
       // 对话框表单width
       formLabelWidth: "100px",
 
-      // 编辑用户对话框的属性
-      dialogFormVisibleEdit: false
+      // 显示编辑用户对话框的属性
+      dialogFormVisibleEdit: false,
+
+      // 显示分配角色对话框的属性
+      dialogFormVisibleSetUserRole: false,
+      // 分配角色对话框 下拉选项的绑定值
+      currRoleId: -1,
+      // 下拉选要显示的username
+      currUsername: "",
+      // 用户角色名列表
+      roles: [],
+
+      // 修改用户角色 - 发送请求属性
+      currUserId: -1
     };
   },
   methods: {
@@ -217,7 +267,7 @@ export default {
         `users?query=${this.query}&pagenum=${this.pagenum}&pagesize=${this.pagesize}`
       );
 
-      console.log(res);
+      // console.log(res);
 
       const {
         meta: { status, msg },
@@ -278,7 +328,7 @@ export default {
       this.$http.defaults.headers.common["Authorization"] = AUTH_TOKEN;
       // 发送请求
       const res = await this.$http.post(`users`, this.form);
-      console.log(res);
+      // console.log(res);
       const {
         meta: { status, msg },
         data
@@ -311,7 +361,7 @@ export default {
           // 2、把userid以showDeleteUserMsgBtn参数的形式传参
           // | id     | 用户 id  | 不能为空`参数是url参数:id` |
           const res = await this.$http.delete(`users/${userId}`);
-          console.log(res);
+          // console.log(res);
 
           if (res.data.meta.status === 200) {
             // 当前分页跳转到第一页
@@ -348,12 +398,73 @@ export default {
     async editUser() {
       // 用户输入信息 => 点击确定按钮 => 发送请求 => 关闭对话框 => 显示提示消息 => 更新列表
       // 在打开对话框时。this.form已经被赋值
-      const res = await this.$http.put(`users/${this.form.id}`, this.form);
+      const res = await this.$http
+        .put(`users/${this.form.id}`, this.form)
+        .then(res => {
+          this.$message.success(res.data.meta.msg);
+        });
       this.dialogFormVisibleEdit = false;
-      this.$message.success(res.data.meta.msg);
       this.getUserList();
       // 在点击添加按钮，添加弹框的表单会显示数据，
       // 此时，与添加按钮的方法使用同一个form，需要在add方法中清空form数据
+    },
+
+    // switch - 修改状态
+    // | uId    | 用户 ID  | 不能为空`携带在url中`                       |
+    // | type   | 用户状态 | 不能为空`携带在url中`，值为 true 或者 false |
+    async changeMgState(user) {
+      const res = await this.$http
+        .put(`users/${user.id}/state/${user.mg_state}`)
+        .then(res => {
+          this.$message.success(res.data.meta.msg);
+        });
+      // console.log(res);
+    },
+
+    // 编辑用户 - 修改用户角色 - 打开对话框显示数据
+    // - 请求路径：users/:id
+    // - 请求方法：get
+    // | id     | 用户 ID  | 不能为空`携带在url中` |
+    // - 请求路径：users/:id/role
+    // - 请求方法：put
+    // | id     | 用户 ID  | 不能为空`参数是url参数:id` |
+    // | rid    | 角色 id  | 不能为空`参数body参数`     |
+    async showSetUserRoleDialog(user) {
+      // 赋值要显示的username
+      this.currUsername = user.username;
+      // 在打开对话框时。给currUserId赋值
+      this.currUserId = user.id;
+      // 获取所有的角色,动态显示下拉框的所有角色名
+      const res1 = await this.$http.get(`roles`);
+      this.roles = res1.data.data;
+      // 获取当前用户的角色id
+      const res = await this.$http.get(`users/${user.id}`);
+      // console.log(res1);
+      // 当前角色的roleName 接口文档中role_id其实是rid
+      this.currRoleId = res.data.data.rid;
+      // console.log(res);
+      // 打开对话框
+      this.dialogFormVisibleSetUserRole = true;
+    },
+
+    // 修改用户角色 - 发送请求
+    // - 请求路径：roles/:id
+    // - 请求方法：put
+    // | :id      | 角色 ID  | 不能为空`携带在url中` |
+    // | roleName | 角色名称 | 不能为空              |
+    // | roleDesc | 角色描述 | 可以为空              |
+    async setRole() {
+      // 在打开对话框时。给currUserId赋值
+      const res = await this.$http.put(`users/${this.currUserId}/role`, {
+        rid: this.currRoleId
+      });
+      console.log(res);
+      this.dialogFormVisibleSetUserRole = false;
+      if (res.data.meta.status === 200) {
+        this.$message.success(res.data.meta.msg);
+      } else {
+        this.$message.warning(res.data.meta.msg);
+      }
     }
   }
 };
