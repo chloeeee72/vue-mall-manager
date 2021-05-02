@@ -1,5 +1,5 @@
 <template>
-  <!-- 面包屑 -->
+  <!-- 封装面包屑组件 并命名 -->
   <el-breadcrumb separator="〉">
     <el-breadcrumb-item to="/users">首页</el-breadcrumb-item>
     <el-breadcrumb-item>{{ level1 }}</el-breadcrumb-item>
@@ -9,6 +9,8 @@
 
 <script>
 export default {
+  // 给组件命名
+  name: "my-bread",
   data() {
     return {
       // level1: "",

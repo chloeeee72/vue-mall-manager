@@ -10,7 +10,23 @@
 </template>
 
 <script>
-export default {};
+export default {
+  created() {
+    this.getRightlist();
+  },
+  data() {
+    return {
+      rightlist: []
+    };
+  },
+  methods: {
+    async getRightlist() {
+      const res = await this.$http.get(`rights/list`);
+      // console.log(res);
+      this.rightlist = res.data.data;
+    }
+  }
+};
 </script>
 
 <style></style>
