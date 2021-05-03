@@ -255,9 +255,7 @@ export default {
     async getUserList() {
       // 除了登陆的所有请求都需要授权
       // 需要授权的API，需要在请求头中使用 Authorization 字段提供 token 令牌
-      // 设置请求头
-      const AUTH_TOKEN = localStorage.getItem("token");
-      this.$http.defaults.headers.common["Authorization"] = AUTH_TOKEN;
+      // 在http.js的拦截器里设置请求头
 
       const res = await this.$http.get(
         `users?query=${this.query}&pagenum=${this.pagenum}&pagesize=${this.pagesize}`

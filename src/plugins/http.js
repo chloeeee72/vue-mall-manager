@@ -4,17 +4,17 @@ import axios from "axios";
 const MyHttpServer = {};
 
 MyHttpServer.install = Vue => {
+  // 域名
   axios.defaults.baseURL = 'http://127.0.0.1:8888/api/private/v1/'
-
-  // 在请求发起之前，除了登陆请求都需要设置请求头
-  // const AUTH_TOKEN = localStorage.getItem("token");
-  // axios.defaults.headers.common["Authorization"] = AUTH_TOKEN;
-
-
   // 添加请求拦截器
   axios.interceptors.request.use(function (config) {
     console.log("触发拦截器");
-    
+    // 在请求发起之前，除了登陆请求都需要设置请求头
+    if (config.uel !== 'login') {
+      console.log('给非登陆页设置请求头');
+      const AUTH_TOKEN = localStorage.getItem("token");
+      config.headers.common["Authorization"] = AUTH_TOKEN;
+    }
     // 在发送请求之前做些什么
     return config;
   }, function (error) {
