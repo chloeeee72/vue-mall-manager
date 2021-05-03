@@ -59,7 +59,7 @@
             </template>
 
             <el-menu-item-group>
-              <el-menu-item index="2-1">
+              <el-menu-item index="role">
                 <i class="el-icon-postcard"></i>
                 角色列表
               </el-menu-item>

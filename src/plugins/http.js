@@ -8,10 +8,10 @@ MyHttpServer.install = Vue => {
   axios.defaults.baseURL = 'http://127.0.0.1:8888/api/private/v1/'
   // 添加请求拦截器
   axios.interceptors.request.use(function (config) {
-    console.log("触发拦截器");
+    // console.log("触发拦截器");
     // 在请求发起之前，除了登陆请求都需要设置请求头
     if (config.uel !== 'login') {
-      console.log('给非登陆页设置请求头');
+      // console.log('给非登陆页设置请求头');
       const AUTH_TOKEN = localStorage.getItem("token");
       config.headers.common["Authorization"] = AUTH_TOKEN;
     }

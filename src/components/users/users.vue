@@ -30,7 +30,12 @@
 
     <!-- 表格 -->
     <!-- :data="userListData":给表格传数据 -->
-    <el-table :data="userListData" style="width: 100%">
+    <el-table
+      :header-cell-style="centerTableData"
+      :cell-style="centerTableData"
+      :data="userListData"
+      style="width: 100%"
+    >
       <el-table-column label="#" width="100" type="index"> </el-table-column>
       <el-table-column prop="username" label="姓名" width="100">
       </el-table-column>
@@ -226,7 +231,7 @@ export default {
         mobile: ""
       },
       // 对话框表单width
-      formLabelWidth: "100px",
+      formLabelWidth: 1 / 7,
 
       // 显示编辑用户对话框的属性
       dialogFormVisibleEdit: false,
@@ -245,6 +250,10 @@ export default {
     };
   },
   methods: {
+    // 表格居中
+    centerTableData() {
+      return "text-align:center";
+    },
     // 获取数据方法
     // 1、query=""：获取全部数据
     // 2、（用于用户搜索）query有值时：根据query显示数据信息，当前页码，每页显示条数
