@@ -15,15 +15,17 @@
       :data="roleList"
       :header-cell-style="centerTableData"
       :cell-style="centerTableData"
-      :expand-change="expandChangeTransition"
     >
       <el-table-column type="expand" :width="tableColumWidth">
+        <!-- 每个角色拥有的权限展开行 -->
         <template slot-scope="scope">
           <!-- 有权限显示 -->
           <el-row v-for="(item1, i) in scope.row.children" :key="i">
             <!-- 一级权限 -->
             <el-col :span="4">
-              <el-tag closable>{{ item1.authName }}</el-tag>
+              <el-tag closable @close="deleRight(scope.row, item1.id)">{{
+                item1.authName
+              }}</el-tag>
               <i class="el-icon-arrow-right"></i>
             </el-col>
             <!-- 二三级权限 -->
@@ -31,13 +33,19 @@
               <el-row v-for="(item2, i) in item1.children" :key="i">
                 <!-- 二级权限 -->
                 <el-col :span="4">
-                  <el-tag closable type="success">{{ item2.authName }}</el-tag>
+                  <el-tag
+                    closable
+                    @close="deleRight(scope.row, item2.id)"
+                    type="success"
+                    >{{ item2.authName }}</el-tag
+                  >
                   <i class="el-icon-arrow-right"></i>
                 </el-col>
                 <!-- 三级权限 -->
                 <el-col :span="20">
                   <el-tag
                     closable
+                    @close="deleRight(scope.row, item3.id)"
                     type="warning"
                     v-for="(item3, i) in item2.children"
                     :key="i"
@@ -52,6 +60,7 @@
         </template>
       </el-table-column>
 
+      <!-- 标题 每一列数据prop-->
       <el-table-column
         label="#"
         type="index"
@@ -72,15 +81,14 @@
       >
       </el-table-column>
 
+      <!-- 编辑按钮 -->
       <el-table-column prop="address" label="操作" mini>
         <template slot-scope="scope">
-          <!-- 编辑按钮 -->
           <el-button
             type="primary"
             plain
             icon="el-icon-edit"
             size="mini"
-            @click="showEditUserMsgDialog(scope.row)"
             circle
           ></el-button>
 
@@ -89,23 +97,53 @@
             type="danger"
             plain
             icon="el-icon-delete"
-            @click="showDeleteUserMsgBtn(scope.row.id)"
             size="mini"
             circle
           ></el-button>
 
-          <!-- 修改用户角色 -->
+          <!-- 修改用户角色权限 -->
           <el-button
             type="success"
             plain
             icon="el-icon-check"
-            @click="showSetUserRoleDialog(scope.row)"
+            @click="showSetUserRightDialog(scope.row)"
             size="mini"
             circle
           ></el-button>
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- 对话框 -->
+    <!-- 对话框 - 修改用户角色权限 -->
+    <el-dialog title="修改权限" :visible.sync="dialogFormVisibleRight">
+      <!-- 树形 多选表单 
+        data 数据源
+        show-checkbox 显示多选框
+        lazy 懒加载
+        node-key 每个节点唯一的表示 通常是data数据源key名中的id
+        default-expanded-keys 默认展开
+        default-checked-keys 默认选中的节点
+        props 配置项{label，children}
+        label 节点的文字标题和children节点的子节点，来源于data数据源的key名
+        -->
+      <el-tree
+        :data="treelist"
+        show-checkbox
+        default-expand-all
+        :default-checked-keys="arrcheck"
+        node-key="id"
+        :props="defaultProps"
+      >
+        <!-- :default-expanded-keys="arrexpand" -->
+      </el-tree>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisibleRight = false">取 消</el-button>
+        <el-button type="primary" @click="dialogFormVisibleRight = false"
+          >确 定</el-button
+        >
+      </div>
+    </el-dialog>
   </el-card>
 </template>
 
@@ -120,6 +158,19 @@ export default {
       roleList: [],
       // 表格宽度
       tableColumWidth: 1 / 4,
+
+      // 对话框visi
+      // 修改对话框权限对话框
+      dialogFormVisibleRight: false,
+      // 树形结构的数据
+      treelist: [],
+      defaultProps: {
+        label: "authName",
+        children: "children",
+      },
+      // arrexpand: [],
+      // 存储该角色有权限的id
+      arrcheck: [],
     };
   },
 
@@ -128,16 +179,63 @@ export default {
     centerTableData() {
       return "text-align:center";
     },
-    // 获取表格数据
+    // 点击角色列表 -> 获取表格数据
     async getRoleList() {
       const res = await this.$http.get(`roles`);
       // console.log(res);
       this.roleList = res.data.data;
-      console.log(this.roleList);
+      // console.log(this.roleList);
+    },
+
+    // 取消某个角色的某个权限
+    // - 请求路径：roles/:roleId/rights/:rightId
+    // - 请求方法：delete
+    //   | :roleId  | 角色 ID  | 不能为空`携带在url中` |
+    //   | :rightId | 权限 ID  | 不能为空`携带在url中` |
+    async deleRight(role, rightId) {
+      const res = await this.$http.delete(`roles/${role.id}/rights/${rightId}`);
+      // console.log(res);
+      // 删除成功更新当前角色权限列表
+      role.children = res.data.data;
+    },
+
+    // 操作按钮 - 修改用户角色
+    async showSetUserRightDialog(role) {
+      // 获取树形结构的全部权限数据
+      const res = await this.$http.get(`rights/tree`);
+      this.treelist = res.data.data;
+
+      // 获取当前角色拥有的权限数据 id 存在arrcheck中
+      let arrtemp2 = [];
+      role.children.forEach((item1) => {
+        // arrtemp2.push(item1.id);
+        item1.children.forEach((item2) => {
+          // arrtemp2.push(item2.id);
+          item2.children.forEach((item3) => {
+            arrtemp2.push(item3.id);
+          });
+        });
+      });
+      // console.log(arrtemp2);
+      this.arrcheck = arrtemp2;
+      // 获取全部id，用于展开树形结构数据
+      // var arrtemp1 = [];
+      // this.treelist.forEach((item1) => {
+      //   arrtemp1.push(item1.id);
+      //   item1.children.forEach((item2) => {
+      //     arrtemp1.push(item2.id);
+      //     item2.children.forEach((item3) => {
+      //       arrtemp1.push(item3.id);
+      //     });
+      //   });
+      // });
+      // console.log(arrtemp1);
+
+      this.dialogFormVisibleRight = true;
     },
     // 添加用户
-    addRole() {}
-  }
+    addRole() {},
+  },
 };
 </script>
 

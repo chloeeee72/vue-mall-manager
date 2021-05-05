@@ -146,7 +146,7 @@ export default {
     }
   },
 
-  created() {
+  mounted() {
     this.res = this.$route.params.res;
     this.username = this.res.data.data.username;
   },
