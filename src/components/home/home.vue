@@ -35,92 +35,22 @@
           <!-- :router="true" => 开启路由模式 -->
           <!-- :unique-opened="true"  =>  只保存一个子菜单的展开 -->
           <!-- :default-openeds="['1']" => 默认打开第一个子菜单 -->
-          <!-- 用户管理 -->
-          <el-submenu index="1">
+          <!-- 侧边栏，v-for遍历显示 -->
+          <el-submenu :index="''+item1.order" v-for="(item1, index) in menus" :key="index">
             <template slot="title">
               <i class="el-icon-user"></i>
-              用户管理
+              {{ item1.authName }}
             </template>
 
-            <el-menu-item-group>
-              <!-- 绑定路由 -->
-              <el-menu-item :index="router.user">
-                <i class="el-icon-document"></i>
-                用户列表
-              </el-menu-item>
-            </el-menu-item-group>
-          </el-submenu>
-
-          <!-- 权限管理 -->
-          <el-submenu index="2">
-            <template slot="title">
-              <i class="el-icon-s-operation"></i>
-              权限管理
-            </template>
-
-            <el-menu-item-group>
-              <el-menu-item index="role">
-                <i class="el-icon-postcard"></i>
-                角色列表
-              </el-menu-item>
-              <el-menu-item index="right">
-                <i class="el-icon-warning-outline"></i>
-                权限列表
-              </el-menu-item>
-            </el-menu-item-group>
-          </el-submenu>
-
-          <!-- 商品管理 -->
-          <el-submenu index="3">
-            <template slot="title">
-              <i class="el-icon-goods"></i>
-              商品管理
-            </template>
-
-            <el-menu-item-group>
-              <el-menu-item index="3-1">
-                <i class="el-icon-shopping-cart-2"></i>
-                商品列表
-              </el-menu-item>
-              <el-menu-item index="3-2">
-                <i class="el-icon-paperclip"></i>
-                分类参数
-              </el-menu-item>
-              <el-menu-item index="3-3">
-                <i class="el-icon-more-outline"></i>
-                商品分类
-              </el-menu-item>
-            </el-menu-item-group>
-          </el-submenu>
-
-          <!-- 订单管理 -->
-          <el-submenu index="4">
-            <template slot="title">
-              <i class="el-icon-s-order"></i>
-              订单管理
-            </template>
-
-            <el-menu-item-group>
-              <el-menu-item index="4-1">
-                <i class="el-icon-menu"></i>
-                订单列表
-              </el-menu-item>
-            </el-menu-item-group>
-          </el-submenu>
-
-          <!-- 数据统计 -->
-          <el-submenu index="5">
-            <template slot="title">
-              <i class="el-icon-s-data"></i>
-              数据统计
-            </template>
-
-            <el-menu-item-group>
-              <el-menu-item index="5-1">
-                <i class="el-icon-pie-chart"></i>
-                数据报表
-              </el-menu-item>
-            </el-menu-item-group>
+            <!-- 绑定路由 -->
+            <el-menu-item
+              v-for="(item2, index) in item1.children"
+              :key="index"
+              :index="item2.path"
+            >
+              <i class="el-icon-document"></i>
+              {{ item2.authName }}
+            </el-menu-item>
           </el-submenu>
         </el-menu>
       </el-aside>
@@ -145,22 +75,20 @@ export default {
       this.$router.push({ name: "login" });
     }
   },
-
-  mounted() {
-    this.res = this.$route.params.res;
-    this.username = this.res.data.data.username;
-  },
   data() {
     return {
-      res: "",
-      username: "",
-      router: {
-        user: "/users"
-      }
+      menus: []
     };
   },
-
+  created() {
+    this.getMenus();
+  },
   methods: {
+    // 获取导航数据
+    async getMenus() {
+      const res = await this.$http.get(`menus`);
+      this.menus = res.data.data;
+    },
     handleSignout() {
       // 清除token => 提示 => 回到login page
       localStorage.clear();

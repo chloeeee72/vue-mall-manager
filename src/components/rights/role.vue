@@ -128,6 +128,7 @@
         label 节点的文字标题和children节点的子节点，来源于data数据源的key名
         -->
       <el-tree
+        ref="tree"
         :data="treelist"
         show-checkbox
         default-expand-all
@@ -139,9 +140,7 @@
       </el-tree>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisibleRight = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisibleRight = false"
-          >确 定</el-button
-        >
+        <el-button type="primary" @click="setRoleRight()">确 定</el-button>
       </div>
     </el-dialog>
   </el-card>
@@ -171,6 +170,7 @@ export default {
       // arrexpand: [],
       // 存储该角色有权限的id
       arrcheck: [],
+      currRoleId: -1,
     };
   },
 
@@ -204,7 +204,7 @@ export default {
       // 获取树形结构的全部权限数据
       const res = await this.$http.get(`rights/tree`);
       this.treelist = res.data.data;
-
+      this.currRoleId = role.id;
       // 获取当前角色拥有的权限数据 id 存在arrcheck中
       let arrtemp2 = [];
       role.children.forEach((item1) => {
@@ -232,6 +232,42 @@ export default {
       // console.log(arrtemp1);
 
       this.dialogFormVisibleRight = true;
+    },
+
+    // 表单确定按钮设置用户权限
+    // - 请求路径：roles/:roleId/rights
+    // - 请求方法：post
+    // | :roleId | 角色 ID                | 不能为空`携带在url中`                                        |
+    // | rids    | 权限 ID 列表（字符串） | 以 `,` 分割的权限 ID 列表
+    // （获取所有被选中、叶子节点的key和半选中节点的key, 包括 1，2，3级节点） |
+    async setRoleRight() {
+      // 获取全选的id的数组 arr1 getCheckedKeys()
+      // el-tree标签的js方法 el-tree.get
+      let arr1 = this.$refs.tree.getCheckedKeys();
+      // 获取单选的id的数组 arr2 getHalfCheckedKeys()
+      let arr2 = this.$refs.tree.getHalfCheckedKeys();
+      // arr1.concat(arr2)
+      // let arr = arr1 + arr2
+      // ES6展开运算符 ...数组或者对象
+      // 表单勾选的权限数组列表
+      let arr = [...arr1, ...arr2];
+      // console.log("arr", arr);
+      // 发起请求
+      const res = await this.$http.post(`roles/${this.currRoleId}/rights`, {
+        rids: arr.join(","),
+      });
+      // console.log("res", res);
+
+      // 更新数据
+      this.getRoleList();
+      // 关闭对话框
+      this.dialogFormVisibleRight = false;
+      // 提示信息
+      if (res.data.meta.status === 200) {
+        this.$message({ message: res.data.meta.msg, type: "success" });
+      } else {
+        this.$message({ message: res.data.meta.msg, type: "warning" });
+      }
     },
     // 添加用户
     addRole() {},
