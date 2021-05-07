@@ -2,6 +2,15 @@
   <el-card class="card">
     <my-bread level1="商品管理" level2="商品列表"> </my-bread>
 
+    <!-- 提示消息 -->
+    <el-alert
+      title="添加物品信息"
+      type="success"
+      class="alert"
+      show-icon
+      center
+    >
+    </el-alert>
     <!-- 步骤条 -->
     <el-steps
       :active="active"
@@ -37,7 +46,7 @@ export default {
 </script>
 
 <style>
-.step {
+.alert {
   margin-top: 25px;
   margin-bottom: 25px;
 }
