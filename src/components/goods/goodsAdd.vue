@@ -18,14 +18,27 @@
       class="step"
       finish-status="success"
     >
-      <el-step title="基本信息"></el-step>
-      <el-step title="商品参数"></el-step>
-      <el-step title="商品属性"></el-step>
-      <el-step title="商品图片"></el-step>
-      <el-step title="商品内容"></el-step>
+      <el-step
+        v-for="(title, index) in titleList"
+        :key="index"
+        :title="title"
+      ></el-step>
     </el-steps>
 
-    <el-button style="margin-top: 12px;" @click="next">下一步</el-button>
+    <!-- tabs -->
+    <el-tabs
+      :tab-position="tabPosition"
+      style="height: 200px;"
+      v-model="active"
+    >
+      <el-tab-pane
+        :name="index + 1"
+        v-for="(title, index) in titleList"
+        :key="index"
+        :label="title"
+        >{{ index }}</el-tab-pane
+      >
+    </el-tabs>
   </el-card>
 </template>
 
@@ -33,14 +46,17 @@
 export default {
   data() {
     return {
-      active: 0
+      //
+      active: 0,
+      // title list
+      titleList: ["基本信息", "商品参数", "商品属性", "商品图片", "商品内容"],
+      // tabs 显示位置
+      tabPosition: "left"
     };
   },
 
   methods: {
-    next() {
-      if (this.active++ > 4) this.active = 0;
-    }
+    changeTitle() {}
   }
 };
 </script>
@@ -48,6 +64,9 @@ export default {
 <style>
 .alert {
   margin-top: 25px;
+  margin-bottom: 25px;
+}
+.step {
   margin-bottom: 25px;
 }
 </style>
