@@ -36,9 +36,13 @@
           <!-- :unique-opened="true"  =>  只保存一个子菜单的展开 -->
           <!-- :default-openeds="['1']" => 默认打开第一个子菜单 -->
           <!-- 侧边栏，v-for遍历显示 -->
-          <el-submenu :index="''+item1.order" v-for="(item1, index) in menus" :key="index">
+          <el-submenu
+            :index="'' + item1.order"
+            v-for="(item1, index) in menus"
+            :key="index"
+          >
             <template slot="title">
-              <i class="el-icon-user"></i>
+              <i :class="iconList[index]"></i>
               {{ item1.authName }}
             </template>
 
@@ -48,8 +52,8 @@
               :key="index"
               :index="item2.path"
             >
-              <i class="el-icon-document"></i>
-              {{ item2.authName }}
+                <i class="el-icon-document"> </i>
+                {{ item2.authName }}
             </el-menu-item>
           </el-submenu>
         </el-menu>
@@ -67,27 +71,51 @@ export default {
   // 获取token
   // if token 有 => 继续渲染组件
   // if token 无 => 登陆页
-  beforeCreate() {
-    // 获取token
-    const token = localStorage.getItem("token");
-    // 无token
-    if (!token) {
-      this.$router.push({ name: "login" });
-    }
-  },
+  // beforeCreate() {
+  //   // 获取token
+  //   const token = localStorage.getItem("token");
+  //   // 无token
+  //   if (!token) {
+  //     this.$router.push({ name: "login" });
+  //   }
+  // },
+
+  // 以上代码在router.js中
+
   data() {
     return {
-      menus: []
+      menus: [],
+      iconList: [
+        // 角色
+        {
+          "el-icon-user": "el-icon-document"
+        }, // 权限 角色 权限
+        {
+          "el-icon-warning-outline": ["el-icon-view", "el-icon-open"]
+        }, // 商品管理
+        {
+          "el-icon-goods": [
+            "el-icon-tickets",
+            "el-icon-data-analysis",
+            "el-icon-folder-opened"
+          ]
+        }, // 订单管理 列表 参数 分类
+        { "el-icon-tickets": "el-icon-shopping-cart-2" },
+        // 数据
+        { "el-icon-pie-chart": "el-icon-data-line" }
+      ]
     };
   },
   created() {
     this.getMenus();
   },
   methods: {
-    // 获取导航数据
+    // 动态 - 获取导航数据
     async getMenus() {
       const res = await this.$http.get(`menus`);
       this.menus = res.data.data;
+      // console.log( this.menus);
+      
     },
     handleSignout() {
       // 清除token => 提示 => 回到login page

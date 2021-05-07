@@ -20,7 +20,7 @@ export default {
   // props：值为字符串数组，用法和data中中值用法一样，来源于使用组件时的传值
   // props中的数据是该组件的属性，<child-a :msg="abc">
 
-  props: ["level1", "level2"]
+  props: ["level1", "level2"],
 };
 </script>
 
