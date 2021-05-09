@@ -66,26 +66,51 @@
           </el-form-item>
         </el-tab-pane>
 
+        <!-- 该三级分类的商品参数 动态参数-->
         <el-tab-pane name="2" label="商品参数">
-          <!-- 该三级分类的商品参数 -->
-          <el-form-item label="XXX">
-            <!-- :label="item1.attr_name"
-            v-for="(item1, index) in arrDyparams"
-            :key="index"复选框组 -->
-            <el-checkbox-group v-model="checkList">
-              <!-- <el-checkbox
-                v-for="(item2, index) in item1.attr_vals"
-                :key="index"
+          <el-form-item
+            :label="item1.attr_name"
+            v-for="(item1, i) in arrDyparams"
+            :key="i"
+          >
+            <el-checkbox-group v-model="item1.attr_vals">
+              <el-checkbox
+                border
                 :label="item2"
-              ></el-checkbox> -->
-              <el-checkbox label="a"></el-checkbox>
-              <el-checkbox label="b"></el-checkbox>
-              <el-checkbox label="c"></el-checkbox>
+                v-for="(item2, i) in item1.attr_vals"
+                :key="i"
+              ></el-checkbox>
             </el-checkbox-group>
           </el-form-item>
         </el-tab-pane>
-        <el-tab-pane name="3" label="商品属性">商品属性</el-tab-pane>
-        <el-tab-pane name="4" label="商品照片">商品照片</el-tab-pane>
+
+        <!-- 静态参数 -->
+        <el-tab-pane name="3" label="商品属性">
+          <!-- 表单title -->
+          <el-form-item
+            v-for="(item, i) in arrStaticparams"
+            :key="i"
+            :label="item.attr_name"
+            ><el-input v-model="item.attr_vals"></el-input
+          ></el-form-item>
+        </el-tab-pane>
+
+        <!-- 点击上传图片 -->
+        <el-tab-pane name="4" label="商品照片">
+          <el-upload
+            class="upload-demo"
+            action="https://jsonplaceholder.typicode.com/posts/"
+            :on-preview="handlePreview"
+            :on-remove="handleRemove"
+            :file-list="fileList"
+            list-type="picture"
+          >
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip">
+              只能上传jpg/png文件，且不超过500kb
+            </div>
+          </el-upload>
+        </el-tab-pane>
         <el-tab-pane name="5" label="商品内容">商品内容</el-tab-pane>
       </el-tabs>
     </el-form>
@@ -136,7 +161,20 @@ export default {
       },
       // 动态参数的数据数组
       arrDyparams: [],
-      checkList: ["复选框a", "复选框b", "复选框c"]
+      // 静态参数的数据数组
+      arrStaticparams: [],
+      fileList: [
+        {
+          name: "food.jpeg",
+          url:
+            "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100"
+        },
+        {
+          name: "food2.jpeg",
+          url:
+            "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100"
+        }
+      ]
     };
   },
   created() {
@@ -155,7 +193,7 @@ export default {
     async tabChange() {
       // 点击第二个tabs，如果之前有选择三级分类，请求数据
       // 没有选择三级分类，提示“去选择”消息
-      if (this.active === 2) {
+      if (this.active == 2) {
         if (this.selectedOptions.length !== 3) {
           // 提示
           this.$message.warning("请先选择三级分类");
@@ -172,16 +210,34 @@ export default {
         const res = await this.$http.get(
           `categories/${this.selectedOptions[2]}/attributes?sel=many`
         );
-        console.log(res);
+        // console.log(res);
         this.arrDyparams = res.data.data;
 
         // this.arrDyparams 每个对象.attr_vals 字符串 -> 数组 -> v-for渲染
         this.arrDyparams.forEach(item => {
-          // 商品没有动态参数
+          // 商品没有动态参数，v-for遍历空数组不报错
           item.attr_vals =
-            item.attr_vals.length === 0 ? [] : item.attr_vals.trim().split(",");
+            item.attr_vals.length == 0 ? [] : item.attr_vals.trim().split(",");
         });
+      } else if (this.active == 3) {
+        // 点击第三个tab 数组长度=3，可以获取静态参数的数据
+        if (this.selectedOptions.length !== 3) {
+          // 提示
+          this.$message.warning("请先选择三级分类");
+          return;
+        }
+        const res = await this.$http.get(
+          `categories/${this.selectedOptions[2]}/attributes?sel=only`
+        );
+        this.arrStaticparams = res.data.data;
+        console.log(this.arrStaticparams);
       }
+    },
+    handleRemove(file, fileList) {
+      console.log(file, fileList);
+    },
+    handlePreview(file) {
+      console.log(file);
     }
   }
 };
