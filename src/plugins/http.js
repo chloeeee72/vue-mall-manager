@@ -6,6 +6,8 @@ const MyHttpServer = {};
 MyHttpServer.install = Vue => {
   // 域名
   axios.defaults.baseURL = 'http://127.0.0.1:8888/api/private/v1/'
+  // 设置请求超时 5s
+  axios.defaults.timeout = 5000;
   // 添加请求拦截器
   axios.interceptors.request.use(function (config) {
     // console.log("触发拦截器");

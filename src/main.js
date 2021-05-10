@@ -11,8 +11,14 @@ import "@/assets/css/reset.css";
 import MyHttpServer from "./plugins/http";
 import moment from "moment"
 
-Vue.use(ElementUI);
-Vue.use(MyHttpServer);
+// import VueQuillEditor from 'vue-quill-editor'
+// require styles
+// import 'quill/dist/quill.core.css'
+// import 'quill/dist/quill.snow.css'
+// import 'quill/dist/quill.bubble.css'
+// Vue.use(  VueQuillEditor )
+Vue.use(MyHttpServer)
+Vue.use(ElementUI)
 // this.$http.get()
 Vue.config.productionTip = false;
 

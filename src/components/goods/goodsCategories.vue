@@ -1,7 +1,7 @@
 <template>
-  <div>
-    categories
-  </div>
+  <el-card>
+    goodsCate
+  </el-card>
 </template>
 
 <script>

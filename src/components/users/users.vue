@@ -231,7 +231,7 @@ export default {
         mobile: ""
       },
       // 对话框表单width
-      formLabelWidth: 1 / 7,
+      formLabelWidth: "120px",
 
       // 显示编辑用户对话框的属性
       dialogFormVisibleEdit: false,

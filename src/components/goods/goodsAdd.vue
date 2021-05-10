@@ -55,6 +55,7 @@
 
           <!-- 级联选择器 -->
           <el-form-item label="商品分类">
+            
             <el-cascader
               props.expandTrigger="hover"
               v-model="selectedOptions"
@@ -97,28 +98,50 @@
 
         <!-- 点击上传图片 -->
         <el-tab-pane name="4" label="商品照片">
-          <el-upload
-            class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            :on-preview="handlePreview"
-            :on-remove="handleRemove"
-            :file-list="fileList"
-            list-type="picture"
-          >
-            <el-button size="small" type="primary">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">
-              只能上传jpg/png文件，且不超过500kb
-            </div>
-          </el-upload>
+          <el-form-item>
+            <!-- https://jsonplaceholder.typicode.com/posts/ -->
+            <el-upload
+              action="http://127.0.0.1:8888/api/private/v1/upload"
+              :headers="headers"
+              :on-preview="handlePreview"
+              :on-remove="handleRemove"
+              :on-success="handleSuccess"
+              list-type="picture"
+            >
+              <el-button size="small" type="primary">点击上传</el-button>
+            </el-upload>
+          </el-form-item>
         </el-tab-pane>
-        <el-tab-pane name="5" label="商品内容">商品内容</el-tab-pane>
+
+        <!-- 商品介绍 - 添加商品 -->
+        <el-tab-pane name="5" label="商品内容">
+          <el-form-item>
+            <!-- 表单元素 -->
+            <el-button
+              class="addGoods"
+              @click="addGoods()"
+              size="small"
+              type="primary"
+              >添加商品</el-button
+            >
+            <!-- 富文本 -->
+            <quill-editor v-model="form.goods_introduce"></quill-editor>
+          </el-form-item>
+        </el-tab-pane>
       </el-tabs>
     </el-form>
   </el-card>
 </template>
 
 <script>
+import "quill/dist/quill.core.css";
+import "quill/dist/quill.snow.css";
+import "quill/dist/quill.bubble.css";
+import { quillEditor } from "vue-quill-editor";
 export default {
+  components: {
+    quillEditor
+  },
   data() {
     return {
       //
@@ -132,14 +155,14 @@ export default {
       // - 请求参数
       // | 参数名          | 参数说明                                          | 备注     |
       // | --------------- | ------------------------------------------------- | -------- |
-      // | goods_name      | 商品名称                                          | 不能为空 |
-      // | goods_cat       | 以为','分割的分类列表                             | 不能为空 |
-      // | goods_price     | 价格                                              | 不能为空 |
-      // | goods_number    | 数量                                              | 不能为空 |
-      // | goods_weight    | 重量                                              | 不能为空 |
-      // | goods_introduce | 介绍                                              | 可以为空 |
-      // | pics            | 上传的图片临时路径（对象）                        | 可以为空 |
-      // | attrs           | 商品的参数（数组），包含 `动态参数` 和 `静态属性` | 可以为空 |
+      // 已处理 绑定 | goods_name      | 商品名称                                          | 不能为空 |
+      // 已处理 绑定 | goods_price     | 价格                                              | 不能为空 |
+      // 已处理 绑定 | goods_number    | 数量                                              | 不能为空 |
+      // 已处理 绑定 | goods_weight    | 重量                                              | 不能为空 |
+      // 已处理 绑定 | goods_introduce | 介绍                                                         | 可以为空 |
+      // | goods_cat       | 以为','分割的分类列表                                         | 不能为空 |
+      // | pics            | 上传的图片临时路径（对象） 数组 [{pic:图片的临时路径}]           | 可以为空 |
+      // | attrs           | 商品的参数（数组），包含 `动态参数` 和 `静态属性` 数组           | 可以为空 |
       form: {
         goods_name: "",
         goods_price: "",
@@ -148,8 +171,8 @@ export default {
         //  goods_cat = selectedOptions.tostring
         goods_cat: "",
         goods_introduce: "",
-        pics: "",
-        attrs: ""
+        pics: [],
+        attrs: []
       },
       // 级联选择器
       selectedOptions: [1, 3, 6],
@@ -163,26 +186,21 @@ export default {
       arrDyparams: [],
       // 静态参数的数据数组
       arrStaticparams: [],
-      fileList: [
-        {
-          name: "food.jpeg",
-          url:
-            "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100"
-        },
-        {
-          name: "food2.jpeg",
-          url:
-            "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100"
-        }
-      ]
+
+      // 上传图片的数据
+      headers: {
+        Authorization: localStorage.getItem("token")
+      }
     };
   },
   created() {
     this.getGoodsCate();
   },
   methods: {
-    // 级联选择器 @change
-    handleChange() {},
+    // 级联选择器 @change 当选中节点变化时触发 选中节点的值
+    handleChange() {
+      // console.log("change");
+    },
     // 获取三级分类信息
     async getGoodsCate() {
       const res = await this.$http.get(`categories?type=3`);
@@ -230,14 +248,70 @@ export default {
           `categories/${this.selectedOptions[2]}/attributes?sel=only`
         );
         this.arrStaticparams = res.data.data;
-        console.log(this.arrStaticparams);
+        // console.log(this.arrStaticparams);
       }
     },
-    handleRemove(file, fileList) {
-      console.log(file, fileList);
+    // 图片上传时的相关方法
+    // file 形参里面是当前操作的图片的相关信息
+    handleRemove(file) {
+      // file.response.data.tem_path 图片临时上传路径
+      // console.log(file);
+      // 从this.form.pics中移除当前删除的图片的临时路径
+      // 先获取该图片的索引 findIndex：返回符合条件的元素的索引
+      let index = this.form.pics.findIndex(item => {
+        return item.pic === file.response.data.tem_path;
+      });
+      this.form.pics.splice(index, 1);
+      if (file.status == "success") {
+        this.$message.success("移除成功");
+      } else {
+        this.$message.success("移除失败");
+      }
     },
-    handlePreview(file) {
-      console.log(file);
+    handlePreview(file) {},
+    handleSuccess(file) {
+      //  从this.form.pics中添加图片的临时路径
+      this.form.pics.push({
+        pic: file.data.tmp_path
+      });
+      // file.data.tmp_path 图片临时上传路径
+      if (file.meta.status == 200) {
+        this.$message.success(file.meta.msg);
+      } else {
+        this.$message.warning(file.meta.msg);
+      }
+    },
+
+    // 添加商品按钮 - 发送请求
+    async addGoods() {
+      // 处理this.form 中的未处理数据
+      // goods_cat | 以为','分割的分类列表
+      this.form.goods_cat = this.selectedOptions.join(",");
+      // pics      | 上传的图片临时路径（对象） 数组 [{pic:图片的临时路径}]
+      // 在上传和移除图片时进行赋值和删除 [].findIndex()
+      // attrs     | 商品的参数（数组），包含 `动态参数` 和 `静态属性` 数组
+      this.form.attrs = [...this.arrDyparams, ...this.arrStaticparams];
+      const res = await this.$http.post(`goods`, this.form);
+      // console.log(res);
+      if (res.data.meta.status === 201) {
+        // 消息提示
+        this.$message.success(res.data.meta.msg);
+        // 清空数据
+        this.form = {
+          goods_name: "",
+          goods_price: "",
+          goods_weight: "",
+          goods_number: "",
+          goods_cat: "",
+          goods_introduce: "",
+          pics: [],
+          attrs: []
+        };
+        // 返回tab=1
+        this.active = '1';
+      } else {
+        this.$message.warning(res.data.meta.msg);
+      }
     }
   }
 };
@@ -250,5 +324,11 @@ export default {
 }
 .step {
   margin-bottom: 25px;
+}
+.ql-editor {
+  min-height: 260px;
+}
+.addGoods {
+  margin-bottom: 10px;
 }
 </style>

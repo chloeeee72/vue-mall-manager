@@ -8,8 +8,8 @@ import Role from "@/components/rights/role.vue"
 // 商品列表
 import GoodsList from '@/components/goods/goodsList.vue'
 import GoodsAdd from "@/components/goods/goodsAdd"
-import Params from '@/components/goods/params.vue'
-import Categories from '@/components/goods/categories.vue'
+import CateParams from '@/components/goods/cateParams.vue'
+import GoodsCategories from '@/components/goods/goodsCategories.vue'
 
 import {
   Message
@@ -55,13 +55,13 @@ const router = new Router({
         },
         {
           path: '/params',
-          name: 'params',
-          component: Params
+          name: 'cateparams',
+          component: CateParams
         },
         {
           path: '/categories',
-          name: 'categories',
-          component: Categories
+          name: 'goodscategories',
+          component: GoodsCategories
         },
         {
           path: '/goodsadd',
@@ -73,6 +73,7 @@ const router = new Router({
 
   ]
 });
+
 // 路由/导航守卫 在路由配置生效之前触发统一判断token
 router.beforeEach((to, from, next) => {
   // to -> 要去的路由配置

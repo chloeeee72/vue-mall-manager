@@ -115,7 +115,6 @@ export default {
       const res = await this.$http.get(`menus`);
       this.menus = res.data.data;
       // console.log( this.menus);
-      
     },
     handleSignout() {
       // 清除token => 提示 => 回到login page
