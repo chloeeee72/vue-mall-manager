@@ -1,5 +1,5 @@
 <template>
-  <el-card>
+  <el-card class="card">
     <my-bread level1="商品管理" level2="分类参数"></my-bread>
 
     <!-- 提示消息 -->
@@ -59,8 +59,20 @@
                   v-model="inputValue"
                   ref="saveTagInput"
                   size="small"
-                  @keyup.enter.native="handleInputConfirm(scope.row.attr_vals)"
-                  @blur="handleInputConfirm(scope.row.attr_vals)"
+                  @keyup.enter.native="
+                    handleInputConfirm(
+                      scope.row.attr_vals,
+                      scope.row.attr_id,
+                      scope.row.attr_name
+                    )
+                  "
+                  @blur="
+                    handleInputConfirm(
+                      scope.row.attr_vals,
+                      scope.row.attr_id,
+                      scope.row.attr_name
+                    )
+                  "
                 >
                 </el-input>
                 <el-button
@@ -98,7 +110,37 @@
             </el-table-column>
           </el-table>
         </el-tab-pane>
-        <el-tab-pane label="静态参数" name="2">静态参数</el-tab-pane>
+        <el-tab-pane label="静态参数" name="2">
+          <!-- 按钮 -->
+          <el-button type="danger">设置静态参数</el-button>
+          <el-table :data="arrStaticparams" style="width: 100%">
+            <el-table-column label="#" type="index"> </el-table-column>
+            <el-table-column label="属性名称" prop="attr_name">
+            </el-table-column>
+            <el-table-column label="属性值" prop="attr_vals"> </el-table-column>
+            <!-- 操作按钮 -->
+            <el-table-column label="操作" mini>
+              <template>
+                <el-button
+                  type="primary"
+                  plain
+                  icon="el-icon-edit"
+                  size="mini"
+                  circle
+                ></el-button>
+
+                <!-- 删除按钮 -->
+                <el-button
+                  type="danger"
+                  plain
+                  icon="el-icon-delete"
+                  size="mini"
+                  circle
+                ></el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
       </el-tabs>
     </el-form>
   </el-card>
@@ -159,18 +201,13 @@ export default {
           item.attr_vals =
             item.attr_vals.length == 0 ? [] : item.attr_vals.trim().split(",");
         });
-        console.log(this.arrDyparams);
 
         // 获取静态数据
-        //   if (this.selectedOptions.length !== 3) {
-        //     // 提示
-        //     this.$message.warning("请先选择三级分类");
-        //     return;
-        //   }
-        //   const res = await this.$http.get(
-        //     `categories/${this.selectedOptions[2]}/attributes?sel=only`
-        //   );
-        //   this.arrStaticparams = res.data.data;
+        const res2 = await this.$http.get(
+          `categories/${this.selectedOptions[2]}/attributes?sel=only`
+        );
+        this.arrStaticparams = res2.data.data;
+        // console.log(this.arrStaticparams);
       }
     },
 
@@ -183,6 +220,7 @@ export default {
     // - 请求方法：put
     async handleClose(attr_vals, attr_id, attr_name, tag) {
       // attr_vals, attr_id, attr_name,tag
+      // 在数组中删除close的 tag
       attr_vals.splice(attr_vals.indexOf(tag), 1);
       // 发送请求
       // | :id       | 分类 ID                | 不能为空`携带在url中`      |
@@ -190,17 +228,21 @@ export default {
       // | attr_name | 新属性的名字           | 不能为空，携带在`请求体`中 |
       // | attr_sel  | 属性的类型[many或only] | 不能为空，携带在`请求体`中 |
       // | attr_vals | 参数的属性值           | 可选参数，携带在`请求体`中 |
+      // 请求体
       let putData = {
         attr_name: attr_name,
         attr_sel: "many",
         attr_vals: attr_vals.join(",")
       };
+      // 发送请求
       const res = await this.$http.put(
         `categories/${this.selectedOptions[2]}/attributes/${attr_id}`,
         putData
       );
-      console.log(res);
+      // console.log(res);
+      // 401      | UNAUTHORIZED          | 未授权
     },
+
     // 点击 +newtag 按钮
     showInput() {
       this.inputVisible = true;
@@ -208,11 +250,24 @@ export default {
         this.$refs.saveTagInput.$refs.input.focus();
       });
     },
+
     // 回车键 or 失去焦点
-    handleInputConfirm(attr_vals) {
+    async handleInputConfirm(attr_vals, attr_id, attr_name) {
       let inputValue = this.inputValue;
       if (inputValue) {
         attr_vals.push(inputValue);
+        // 发送请求
+        let putData = {
+          attr_name: attr_name,
+          attr_sel: "many",
+          attr_vals: attr_vals.join(",")
+        };
+        // 发送请求
+        const res = await this.$http.put(
+          `categories/${this.selectedOptions[2]}/attributes/${attr_id}`,
+          putData
+        );
+        console.log(res);
       }
       this.inputVisible = false;
       this.inputValue = "";

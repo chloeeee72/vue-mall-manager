@@ -28,6 +28,7 @@
 
     <!-- 表格 -->
     <el-table
+      height="480"
       border
       :header-cell-style="centerTableData"
       :cell-style="centerTableData"
