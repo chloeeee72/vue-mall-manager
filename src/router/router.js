@@ -16,7 +16,8 @@ import CateParams from '@/components/goods/cateParams.vue'
 import GoodsCategories from '@/components/goods/goodsCategories.vue'
 // 订单管理
 import Orders from "@/components/order/orders.vue"
-
+// 数据管理
+import Reports from "@/components/report/reports.vue"
 import {
   Message
 } from 'element-ui'
@@ -78,6 +79,11 @@ const router = new Router({
           path: '/orders',
           name: 'orders',
           component: Orders
+        },
+        {
+          path: '/reports',
+          name: 'reports',
+          component: Reports
         }
       ]
     },
