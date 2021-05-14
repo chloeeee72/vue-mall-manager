@@ -1,15 +1,21 @@
 import Vue from "vue";
 import Router from "vue-router";
+// 登陆页
 import Login from "@/components/login/login.vue";
+// home页
 import Home from "@/components/home/home.vue";
+// 用户管理
 import Users from "@/components/users/users.vue"
+// 权限管理
 import Right from "@/components/rights/right.vue"
 import Role from "@/components/rights/role.vue"
-// 商品列表
+// 商品管理
 import GoodsList from '@/components/goods/goodsList.vue'
 import GoodsAdd from "@/components/goods/goodsAdd"
 import CateParams from '@/components/goods/cateParams.vue'
 import GoodsCategories from '@/components/goods/goodsCategories.vue'
+// 订单管理
+import Orders from "@/components/order/orders.vue"
 
 import {
   Message
@@ -67,6 +73,11 @@ const router = new Router({
           path: '/goodsadd',
           name: 'goodsadd',
           component: GoodsAdd
+        },
+        {
+          path: '/orders',
+          name: 'orders',
+          component: Orders
         }
       ]
     },
