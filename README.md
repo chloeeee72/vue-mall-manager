@@ -21,19 +21,6 @@
 
 ## todo:
 
-- 鉴权
-- 每个页面都会跳转到 home page，在 home page 中进行页面级权限控制
-  - 其他做法：
-  - 在路由守卫中拦截，针对没有权限的模块进行重定向
-  - （不足：每次访问模块都需要鉴权，模块数量过多时会影响系统性能）
-  - 也可以用 vue-router 2.x 版本新加的 API addRouters 动态添加路由信息
-  - （不足：首次加载须有解析和添加，多跳转一次路由）
-- API 封装
-  - 环境的切换 ×
-  - 响应拦截 -> 拦截器返回响应数据 axios.interceptors.response.use http.js
-  - 封装 ajax 请求方法 http.js
-  - api 的统一管理 api.js -> import http.js
-
 ##### http.js:
 
 - [√] 添加 baseUrl，使用 axios
