@@ -10,8 +10,12 @@
       </el-table-column>
       <el-table-column prop="pay_status" label="是否付款" width="120">
         <template slot-scope="scope">
-          <span v-if="scope.row.pay_status === '0'">否</span>
-          <span v-else-if="scope.row.pay_status === '1'">是</span>
+          <el-tag type="success" v-if="scope.row.pay_status === '0'"
+            >已付款</el-tag
+          >
+          <el-tag type="danger" v-else-if="scope.row.pay_status === '1'"
+            >未付款</el-tag
+          >
         </template>
       </el-table-column>
       <el-table-column prop="is_send" label="是否发货" width="120">
@@ -47,18 +51,54 @@
       layout="total,sizes,prev,pager,next,jumper"
       :total="total"
     ></el-pagination>
+
+    <!-- 操作按钮对话框 -->
+    <el-dialog title="修改订单地址" :visible.sync="dialogTableVisible">
+      <el-form :model="form">
+        <el-form-item label="省市区" :label-width="formLabelWidth">
+          <el-cascader
+            :options="cityOptions"
+            :value="city"
+            @change="changeProvince"
+          >
+          </el-cascader>
+        </el-form-item>
+        <el-form-item label="详细地址" :label-width="formLabelWidth">
+          <el-input v-model="form.address" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogTableVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogTableVisible = false"
+          >确 定</el-button
+        >
+      </div>
+    </el-dialog>
   </el-card>
 </template>
 
 <script>
+import cityOptions from '../../assets/js/city_data2017_element'
+// swiper.js/zepto.js/iscroll.js/wow.js(整屏滚动)
 export default {
   data() {
     return {
+      // 列表数据
       tableData: [],
+      // 分页器
       query: "",
       pagenum: 1,
       pagesize: 5,
-      total: 1
+      total: 1,
+      // 对话框
+      dialogTableVisible: false,
+      formLabelWidth: "120px",
+      // 级联选择器省市区数据
+      cityOptions: cityOptions,
+      form: {
+        address:''
+      },
+      city:""
     };
   },
   created() {
@@ -86,8 +126,8 @@ export default {
       );
       this.total = res.data.data.total;
       this.tableData = res.data.data.goods;
-      console.log(this.tableData);
-      console.log(res);
+      // console.log(this.tableData);
+      // console.log(res);
     },
     // 分页方法
     handleSizeChange(val) {
@@ -101,7 +141,10 @@ export default {
       this.getTableData();
     },
     // 操作按钮 - 编辑按钮
-    showEditDialog() {}
+    showEditDialog() {
+      this.dialogTableVisible = true;
+    },
+    changeProvince(){}
   }
 };
 </script>
